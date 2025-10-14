@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: addressbook-deployment
+  labels:
+    app: addressbook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: addressbook
+  template:
+    metadata:
+      labels:
+        app: addressbook
+    spec:
+      containers:
+      - name: addressbook-app
+        image: vivekbhaskar746/addressbook:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: DB_HOST
+          value: "localhost"
+        - name: DB_PORT
+          value: "3306"
+        - name: DB_USER
+          value: "root"
+        - name: DB_PASSWORD
+          value: "password"
+      - name: mysql
+        image: mysql:5.7
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "password"
+        - name: MYSQL_DATABASE
+          value: "addressbook"

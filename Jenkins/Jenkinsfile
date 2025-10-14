@@ -51,8 +51,6 @@ pipeline {
                     sh '''
                     aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER
 
-                    kubectl apply -f k8s/mysql-deployment.yml
-                    kubectl apply -f k8s/mysql-service.yml
                     kubectl apply -f k8s/deployment.yml
                     kubectl apply -f k8s/service.yml
                     '''
