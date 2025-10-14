@@ -8,8 +8,8 @@ pipeline {
         DOCKER_IMAGE = 'addressbook-app'
         VERSION = 'latest'
         S3_BUCKET = 'my-springbootapp-bucket'
-        AWS_ACCESS_KEY_ID = 'AKIAXYKJVVNINWK4TGE3'
-        AWS_SECRET_ACCESS_KEY = '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'
+        AWS_ACCESS_KEY_ID = 'AKIATCKAPRHTHCHPSVMH'
+        AWS_SECRET_ACCESS_KEY = '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'
     }
 
     stages {
@@ -36,9 +36,10 @@ pipeline {
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials-id']]) {
                     sh '''
-                    aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-                    docker tag $DOCKER_IMAGE:$VERSION $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$DOCKER_IMAGE:$VERSION
-                    docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$DOCKER_IMAGE:$VERSION
+                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 211125504486.dkr.ecr.us-east-1.amazonaws.com
+                    docker build -t my-addressbook .
+                    docker tag my-addressbook:latest 211125504486.dkr.ecr.us-east-1.amazonaws.com/my-addressbook:latest
+                    docker push 211125504486.dkr.ecr.us-east-1.amazonaws.com/my-addressbook:latest
                     '''
                 }
             }
@@ -93,4 +94,5 @@ pipeline {
             }
         }
     }
+
 }
