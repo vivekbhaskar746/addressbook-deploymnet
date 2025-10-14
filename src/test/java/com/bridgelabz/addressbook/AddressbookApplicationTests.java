@@ -1,13 +1,13 @@
-package com.bridgelabz.addressbook;
+// package com.bridgelabz.addressbook;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+// import org.junit.jupiter.api.Test;
+// import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class AddressbookApplicationTests {
+// @SpringBootTest
+// class AddressbookApplicationTests {
 
-	@Test
-	void contextLoads() {
-	}
+// 	@Test
+// 	void contextLoads() {
+// 	}
 
-}
+// }

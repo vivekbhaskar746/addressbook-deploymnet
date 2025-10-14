@@ -8,19 +8,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Slf4j
 @Service
 public class ContactService {
-    @Autowired
 
-    private List<Contact> contacts = new ArrayList<>();
-    @Autowired
     private final ContactRepository contactRepository;
 
+    @Autowired
     public ContactService(ContactRepository contactRepository) {
         this.contactRepository = contactRepository;
     }
@@ -34,7 +31,8 @@ public class ContactService {
     // Get Contact by ID
     public Contact getContactById(Long id) {
         log.info("Fetching contact with ID from database: {}", id);
-        return contactRepository.findById(id).orElseThrow(() -> new AddressBookException("Address Book ID " + id + " not found"));
+        return contactRepository.findById(id)
+                .orElseThrow(() -> new AddressBookException("Address Book ID " + id + " not found"));
     }
 
     // Add New Contact
