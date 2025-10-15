@@ -19,6 +19,10 @@ public class DTOContactController {
     public ResponseEntity<List<Contact>> getAllContacts() {
         return ResponseEntity.ok(contacts);
     }
+    @GetMapping("/actuator/health")
+    public ResponseEntity<String> getAllContacts() {
+        return ResponseEntity.ok("Congratultions bro, you did it.");
+    }
 
     @GetMapping("/contacts/get/{id}")
     public ResponseEntity<Contact> getContactById(@PathVariable Long id) {
