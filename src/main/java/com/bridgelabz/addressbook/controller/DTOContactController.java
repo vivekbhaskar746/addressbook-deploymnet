@@ -20,7 +20,7 @@ public class DTOContactController {
         return ResponseEntity.ok(contacts);
     }
     @GetMapping("/actuator/health")
-    public ResponseEntity<String> getAllContacts() {
+    public ResponseEntity<String> getHealth() {
         return ResponseEntity.ok("Congratultions bro, you did it.");
     }
 
