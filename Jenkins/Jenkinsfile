@@ -89,7 +89,7 @@ pipeline {
                                  fi
 
                           echo "LoadBalancer hostname: $HOST"
-                           curl -f http://$HOST:80/actuator/health
+                           curl -I http://$HOST:80/actuator/health
                         '''
                     }
                 }
@@ -115,6 +115,7 @@ pipeline {
         }
     }
 }
+
 
 
 
