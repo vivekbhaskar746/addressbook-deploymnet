@@ -62,38 +62,39 @@ pipeline {
             }
         }
 
-       stage('Smoke Test') {
-    steps {
-        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials-id']]) {
-            script {
-                sh '''
-                aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER
-                echo "Running smoke test..."
+        stage('Smoke Test') {
+            steps {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials-id']]) {
+                    script {
+                        sh '''
+                        aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER
+                        echo "Running smoke test..."
 
-                for i in $(seq 1 10); do
-                  HOST=$(kubectl get svc addressbook-service -o jsonpath="{.status.loadBalancer.ingress[0].hostname}" 2>/dev/null)
-                  if [ -n "$HOST" ]; then
-                    echo "LoadBalancer hostname: $HOST"
-                    break
-                  fi
-                  echo "Waiting for LoadBalancer IP... ($i)"
-                  sleep 30
-                done
+                        for i in $(seq 1 10); do
+                          HOST=$(kubectl get svc addressbook-service -o jsonpath="{.status.loadBalancer.ingress[0].hostname}" 2>/dev/null)
+                          if [ -n "$HOST" ]; then
+                            echo "LoadBalancer hostname: $HOST"
+                            break
+                          fi
+                          echo "Waiting for LoadBalancer IP... ($i)"
+                          sleep 30
+                        done
 
-                if [ -z "$HOST" ]; then
-                  echo "LoadBalancer hostname not available. Smoke test failed."
-                  exit 1
-                fi
+                        if [ -z "$HOST" ]; then
+                          echo "LoadBalancer hostname not available. Smoke test failed."
+                          exit 1
+                        fi
 
-                curl -sSf http://$HOST:80/actuator/health | grep '"status":"UP"' || {
-                  echo "Smoke test failed: Health endpoint did not return UP"
-                  exit 1
+                        curl -sSf http://$HOST:80/actuator/health | grep '"status":"UP"' || {
+                          echo "Smoke test failed: Health endpoint did not return UP"
+                          exit 1
+                        }
+                        '''
+                    }
                 }
-                '''
             }
         }
     }
-}
 
     post {
         always {
@@ -113,12 +114,3 @@ pipeline {
         }
     }
 }
-}
-
-
-
-
-
-
-
-
