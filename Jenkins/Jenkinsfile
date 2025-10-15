@@ -70,17 +70,17 @@ pipeline {
                         echo "Running smoke test..."
 
                         # Wait for LoadBalancer to be assigned
-                        // for i in {1..10}; do
-                        //   HOST=$(kubectl get svc addressbook-service -o jsonpath="{.status.loadBalancer.ingress[0].hostname}" 2>/dev/null)
-                        //   if [ -n "$HOST" ]; then break; fi
-                        //   echo "Waiting for LoadBalancer IP... ($i)"
-                        //   sleep 10
-                        // done
+                        #// for i in {1..10}; do
+                        #//   HOST=$(kubectl get svc addressbook-service -o jsonpath="{.status.loadBalancer.ingress[0].hostname}" 2>/dev/null)
+                        #//   if [ -n "$HOST" ]; then break; fi
+                        #//   echo "Waiting for LoadBalancer IP... ($i)"
+                        #//   sleep 10
+                        #// done
 
-                        // if [ -z "$HOST" ]; then
-                        //   echo "LoadBalancer hostname not available. Smoke test failed."
-                        //   exit 1
-                        // fi
+                        #// if [ -z "$HOST" ]; then
+                        #//   echo "LoadBalancer hostname not available. Smoke test failed."
+                        #//   exit 1
+                        #// fi
 
                         HOST=$(kubectl get svc addressbook-service -o jsonpath="{.status.loadBalancer.ingress[0].hostname}"
                         curl -f http://$HOST:80/actuator/health
@@ -109,5 +109,6 @@ pipeline {
         }
     }
 }
+
 
 
