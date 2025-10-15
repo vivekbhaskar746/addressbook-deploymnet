@@ -56,7 +56,7 @@ pipeline {
 
                     kubectl apply -f k8s/deployment.yml
                     kubectl apply -f k8s/service.yml
-                    kubectl apply -f mysql-deployment.yaml
+                    kubectl apply -f my-sqldeployment.yml
                     '''
                 }
             }
@@ -119,6 +119,7 @@ pipeline {
         }
     }
 }
+
 
 
 
