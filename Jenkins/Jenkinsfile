@@ -4,7 +4,7 @@ pipeline {
     environment {
         AWS_REGION = 'us-east-1'
         EKS_CLUSTER = 'springboot-cluster'
-        AWS_ACCOUNT_ID = '211125504486'
+        AWS_ACCOUNT_ID = '975373241855'
         DOCKER_IMAGE = 'addressbook-app'
         VERSION = 'latest'
         S3_BUCKET = 'my-springbootapp-bucket'
@@ -34,11 +34,10 @@ pipeline {
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials-id']]) {
                     sh '''
-                    aws ecr get-login-password --region $AWS_REGION | \
-                    docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-
-                    docker tag $DOCKER_IMAGE:$VERSION $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$DOCKER_IMAGE:$VERSION
-                    docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$DOCKER_IMAGE:$VERSION
+                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 975373241855.dkr.ecr.us-east-1.amazonaws.com
+                    docker build -t myspringbootproject .
+                    docker tag myspringbootproject:latest 975373241855.dkr.ecr.us-east-1.amazonaws.com/myspringbootproject:latest
+                    docker push 975373241855.dkr.ecr.us-east-1.amazonaws.com/myspringbootproject:latest
                     '''
                 }
             }
@@ -89,5 +88,6 @@ pipeline {
         }
     }
 }
+
 
 
