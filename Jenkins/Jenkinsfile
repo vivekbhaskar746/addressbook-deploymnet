@@ -82,8 +82,14 @@ pipeline {
                         #//   exit 1
                         #// fi
 
-                        HOST=$(kubectl get svc addressbook-service -o jsonpath="{.status.loadBalancer.ingress[0].hostname}"
-                        curl -f http://$HOST:80/actuator/health
+                       HOST=$(kubectl get svc addressbook-service -o jsonpath="{.status.loadBalancer.ingress[0].hostname}")
+                       if [ -z "$HOST" ]; then
+                          echo "LoadBalancer hostname not available. Exiting..."
+                              exit 1
+                                 fi
+
+                          echo "LoadBalancer hostname: $HOST"
+                           curl -f http://$HOST:80/actuator/health
                         '''
                     }
                 }
@@ -109,6 +115,7 @@ pipeline {
         }
     }
 }
+
 
 
 
