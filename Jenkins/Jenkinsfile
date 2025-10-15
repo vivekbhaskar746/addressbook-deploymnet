@@ -8,20 +8,33 @@ pipeline {
         DOCKER_IMAGE = 'addressbook-app'
         VERSION = 'latest'
         S3_BUCKET = 'my-springbootapp-bucket'
-        ECR_REPO = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${DOCKER_IMAGE}"
+        ECR_REGISTRY = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+        ECR_REPO = "${ECR_REGISTRY}/${DOCKER_IMAGE}"
+        SERVICE_NAME = 'addressbook-service'
+        K8S_NAMESPACE = 'default'
+    }
+
+    options {
+        timeout(time: 30, unit: 'MINUTES')
     }
 
     stages {
         stage('Clone Repository') {
             steps {
-                git url: 'https://github.com/vivekbhaskar746/addressbook-deploymnet.git', branch: 'main'
+                git url: 'https://github.com/vivekbhaskar746/addressbook-deployment.git', branch: 'main'
             }
         }
 
         stage('Build with Maven') {
             steps {
                 sh 'chmod +x mvnw || true'
-                sh './mvnw clean package -Dmaven.test.skip=true || mvn clean package -Dmaven.test.skip=true'
+                sh './mvnw clean package -Dmaven.test.skip=true'
+            }
+        }
+
+        stage('Archive Artifact') {
+            steps {
+                archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
             }
         }
 
@@ -35,11 +48,12 @@ pipeline {
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials-id']]) {
                     sh '''
-                    aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO
+                    set -e
+                    aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
 
-                    # Ensure ECR repo exists
-                    aws ecr describe-repositories --repository-names $DOCKER_IMAGE || \
-                    aws ecr create-repository --repository-name $DOCKER_IMAGE
+                    if ! aws ecr describe-repositories --repository-names $DOCKER_IMAGE > /dev/null 2>&1; then
+                      aws ecr create-repository --repository-name $DOCKER_IMAGE
+                    fi
 
                     docker tag $DOCKER_IMAGE:$VERSION $ECR_REPO:$VERSION
                     docker push $ECR_REPO:$VERSION
@@ -52,11 +66,12 @@ pipeline {
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials-id']]) {
                     sh '''
-                    aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER
+                    export KUBECONFIG=$(mktemp)
+                    aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER --kubeconfig $KUBECONFIG
 
-                    kubectl apply -f k8s/deployment.yml
-                    kubectl apply -f k8s/service.yml
-                    kubectl apply -f my-sqldeployment.yml
+                    kubectl --kubeconfig $KUBECONFIG apply -f k8s/deployment.yml
+                    kubectl --kubeconfig $KUBECONFIG apply -f k8s/service.yml
+                    kubectl --kubeconfig $KUBECONFIG apply -f my-sqldeployment.yml
                     '''
                 }
             }
@@ -67,11 +82,12 @@ pipeline {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials-id']]) {
                     script {
                         sh '''
-                        aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER
+                        export KUBECONFIG=$(mktemp)
+                        aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER --kubeconfig $KUBECONFIG
                         echo "Running smoke test..."
 
                         for i in $(seq 1 10); do
-                          HOST=$(kubectl get svc addressbook-service -o jsonpath="{.status.loadBalancer.ingress[0].hostname}" 2>/dev/null)
+                          HOST=$(kubectl --kubeconfig $KUBECONFIG get svc $SERVICE_NAME -n $K8S_NAMESPACE -o jsonpath="{.status.loadBalancer.ingress[0].hostname}" 2>/dev/null)
                           if [ -n "$HOST" ]; then
                             echo "LoadBalancer hostname: $HOST"
                             break
@@ -97,16 +113,23 @@ pipeline {
     }
 
     post {
+        success {
+            echo '✅ Pipeline completed successfully.'
+        }
+        failure {
+            echo '❌ Pipeline failed. Check logs for details.'
+        }
         always {
             withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials-id']]) {
                 sh '''
-                aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER
+                export KUBECONFIG=$(mktemp)
+                aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER --kubeconfig $KUBECONFIG
 
                 echo "Pipeline completed at $(date)" > pipeline.log
                 echo "Pods status:" >> pipeline.log
-                kubectl get pods >> pipeline.log
+                kubectl --kubeconfig $KUBECONFIG get pods -n $K8S_NAMESPACE >> pipeline.log
                 echo "Service status:" >> pipeline.log
-                kubectl get svc addressbook-service >> pipeline.log
+                kubectl --kubeconfig $KUBECONFIG get svc $SERVICE_NAME -n $K8S_NAMESPACE >> pipeline.log
 
                 aws s3 cp pipeline.log s3://$S3_BUCKET/logs/pipeline-$(date +%Y%m%d%H%M%S).log
                 '''
