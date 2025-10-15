@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: addressbook-app
-        image: vivekbhaskar746/addressbook:latest
+        image: 975373241855.dkr.ecr.us-east-1.amazonaws.com/addressbook-app:latest
         ports:
         - containerPort: 8080
         env:
@@ -36,4 +36,5 @@ spec:
         - name: MYSQL_ROOT_PASSWORD
           value: "password"
         - name: MYSQL_DATABASE
+
           value: "addressbook"
