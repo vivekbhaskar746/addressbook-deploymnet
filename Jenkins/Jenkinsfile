@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         AWS_REGION = 'us-east-1'
-        EKS_CLUSTER = 'springboot-cluster'
+        EKS_CLUSTER = 'mysql-deployment'
         AWS_ACCOUNT_ID = '975373241855'
         DOCKER_IMAGE = 'addressbook-app'
         VERSION = 'latest'
@@ -137,4 +137,5 @@ pipeline {
         }
     }
 }
+
 
