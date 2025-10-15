@@ -21,7 +21,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git url: 'https://github.com/vivekbhaskar746/addressbook-deployment.git', branch: 'main'
+                git url: 'https://github.com/vivekbhaskar746/addressbook-deploymnet.git', branch: 'main'
             }
         }
 
@@ -137,3 +137,4 @@ pipeline {
         }
     }
 }
+
