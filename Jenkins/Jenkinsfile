@@ -89,7 +89,10 @@ pipeline {
                                  fi
 
                           echo "LoadBalancer hostname: $HOST"
-                           curl -I http://$HOST:80/actuator/health
+                          curl -v --connect-timeout 10 http://$HOST:80/actuator/health || {
+  echo "Smoke test failed: No valid response from health endpoint"
+  exit 1
+}
                         '''
                     }
                 }
@@ -115,6 +118,7 @@ pipeline {
         }
     }
 }
+
 
 
 
